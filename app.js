@@ -1401,13 +1401,15 @@ function loadStateFromUrl() {
     
     intParams.forEach(key => {
         if (params.has(key)) {
-            state[key] = parseInt(params.get(key), 10);
+            const parsed = parseInt(params.get(key), 10);
+            if (!isNaN(parsed)) state[key] = parsed;
         }
     });
     
     floatParams.forEach(key => {
         if (params.has(key)) {
-            state[key] = parseFloat(params.get(key));
+            const parsed = parseFloat(params.get(key));
+            if (!isNaN(parsed)) state[key] = parsed;
         }
     });
     
@@ -1607,13 +1609,25 @@ function renderGanttGrid(timeline, projectHoursPerDay) {
         
         // AI generation hours
         let currentDay = step.aiStartDay;
-        let remainingGen = step.aiEndHour - step.aiStartHour;
-        if (step.aiEndDay > step.aiStartDay) {
-            remainingGen = (24 - step.aiStartHour) + (step.aiEndHour);
+        if (step.aiEndDay === step.aiStartDay) {
+            let remainingGen = step.aiEndHour - step.aiStartHour;
+            if (!daySummary[currentDay]) daySummary[currentDay] = { dev: 0, ai: 0 };
+            daySummary[currentDay].ai += Math.max(0, remainingGen);
+        } else {
+            // First day
+            if (!daySummary[currentDay]) daySummary[currentDay] = { dev: 0, ai: 0 };
+            daySummary[currentDay].ai += Math.max(0, 24 - step.aiStartHour);
+            
+            // Intermediate days
+            for (let d = currentDay + 1; d < step.aiEndDay; d++) {
+                if (!daySummary[d]) daySummary[d] = { dev: 0, ai: 0 };
+                daySummary[d].ai += 24;
+            }
+            
+            // Last day
+            if (!daySummary[step.aiEndDay]) daySummary[step.aiEndDay] = { dev: 0, ai: 0 };
+            daySummary[step.aiEndDay].ai += Math.max(0, step.aiEndHour);
         }
-        
-        if (!daySummary[currentDay]) daySummary[currentDay] = { dev: 0, ai: 0 };
-        daySummary[currentDay].ai += Math.max(0, remainingGen);
     });
     
     const totalDays = Math.max(...Object.keys(daySummary).map(Number), 0) + 1;
