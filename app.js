@@ -1505,16 +1505,21 @@ function loadStateFromUrl() {
             const saved = localStorage.getItem('confundusState');
             if (saved) {
                 const parsedState = JSON.parse(saved);
-                // Sanitize loaded state to remove NaNs
+                // Sanitize loaded state to remove NaNs and clamp extreme values
                 for (const key in parsedState) {
                     if (typeof parsedState[key] === 'number' && isNaN(parsedState[key])) {
                         delete parsedState[key];
                     }
-                    // Handle string NaN values if any
                     if (parsedState[key] === 'NaN' || parsedState[key] === null) {
                         delete parsedState[key];
                     }
                 }
+                
+                // Clamp inputs to prevent browser-freezing timelines
+                if (parsedState.loc > 250000) parsedState.loc = 250000;
+                if (parsedState.revisions > 100) parsedState.revisions = 100;
+                if (parsedState.tps && parsedState.tps < 1) parsedState.tps = 50;
+                
                 Object.assign(state, parsedState);
                 return;
             }
@@ -1688,7 +1693,10 @@ function renderTimelineList(timeline, targetCodeTokens, outputTokensPerRev, inpu
     if (!container) return;
     container.innerHTML = '';
     
-    timeline.forEach(step => {
+    // Cap steps rendering to prevent DOM bloat
+    const visibleTimeline = timeline.slice(0, 100);
+    
+    visibleTimeline.forEach(step => {
         const accumCodeTokens = (step.revision - 1) * targetCodeTokens;
         const stepInputTokens = state.contextSize + accumCodeTokens;
         const stepInputCost = (stepInputTokens / 1000000) * inputPrice;
@@ -1732,6 +1740,13 @@ function renderTimelineList(timeline, targetCodeTokens, outputTokensPerRev, inpu
         
         container.appendChild(item);
     });
+
+    if (timeline.length > 100) {
+        const timelineWarning = document.createElement('div');
+        timelineWarning.style.cssText = 'color: var(--accent-purple); font-size: 0.8rem; text-align: center; padding: 15px; font-weight: 600;';
+        timelineWarning.textContent = `⚠️ Timeline contains ${timeline.length} revision steps. Only showing the first 100 steps.`;
+        container.appendChild(timelineWarning);
+    }
 }
 
 function formatDayAndTime(startDay, hourOffset) {
@@ -1787,8 +1802,9 @@ function renderGanttGrid(timeline, projectHoursPerDay) {
     });
     
     const totalDays = Math.max(...Object.keys(daySummary).map(Number), 0) + 1;
+    const maxGanttDays = Math.min(60, totalDays);
     
-    for (let d = 0; d < totalDays; d++) {
+    for (let d = 0; d < maxGanttDays; d++) {
         const summary = daySummary[d] || { dev: 0, ai: 0 };
         const devHoursVal = Math.min(24, summary.dev);
         const aiHoursVal = Math.min(24 - devHoursVal, summary.ai);
@@ -1823,6 +1839,13 @@ function renderGanttGrid(timeline, projectHoursPerDay) {
             </div>
         `;
         container.appendChild(row);
+    }
+    
+    if (totalDays > 60) {
+        const warning = document.createElement('div');
+        warning.style.cssText = 'color: var(--accent-purple); font-size: 0.8rem; text-align: center; margin-top: 10px; font-weight: 600; padding: 5px;';
+        warning.textContent = `⚠️ Timeline spans ${Math.round(totalDays)} days. Only displaying first 60 days in Gantt chart.`;
+        container.appendChild(warning);
     }
 }
 
