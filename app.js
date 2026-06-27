@@ -609,7 +609,8 @@ function applyResourcePreset(key) {
 
 // Timeline Simulation Algorithm
 function simulateCalendarDays(revisions, reviewTimeMins, outputTokensPerRev, tps, devHours, devAllocation, asyncAi, workDays) {
-    const projectHoursPerDay = devHours * (devAllocation / 100);
+    const safeWorkDays = (isNaN(workDays) || workDays <= 0 || workDays > 7) ? 5 : workDays;
+    const projectHoursPerDay = Math.max(0.1, devHours * (devAllocation / 100));
     const reviewHours = reviewTimeMins / 60;
     const genHours = outputTokensPerRev / (tps * 3600);
     
@@ -618,12 +619,14 @@ function simulateCalendarDays(revisions, reviewTimeMins, outputTokensPerRev, tps
     
     const timeline = [];
     
-    const isWorkday = (d) => (d % 7) < workDays;
+    const isWorkday = (d) => (d % 7) < safeWorkDays;
     
     const advanceToNextWorkday = () => {
-        while (!isWorkday(currentDay)) {
+        let safety = 0;
+        while (!isWorkday(currentDay) && safety < 10) {
             currentDay++;
             currentHourInDay = 0;
+            safety++;
         }
     };
     
@@ -1502,6 +1505,16 @@ function loadStateFromUrl() {
             const saved = localStorage.getItem('confundusState');
             if (saved) {
                 const parsedState = JSON.parse(saved);
+                // Sanitize loaded state to remove NaNs
+                for (const key in parsedState) {
+                    if (typeof parsedState[key] === 'number' && isNaN(parsedState[key])) {
+                        delete parsedState[key];
+                    }
+                    // Handle string NaN values if any
+                    if (parsedState[key] === 'NaN' || parsedState[key] === null) {
+                        delete parsedState[key];
+                    }
+                }
                 Object.assign(state, parsedState);
                 return;
             }
