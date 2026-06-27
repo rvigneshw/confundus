@@ -1619,6 +1619,107 @@ input[type=number] {
     text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
 }
 
+/* Magic Wand Button */
+.magic-wand-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    margin-left: 10px;
+    opacity: 0.5;
+    transition: var(--transition-smooth);
+    filter: grayscale(100%);
+}
 
+.magic-wand-btn:hover {
+    opacity: 1;
+    filter: none;
+    transform: scale(1.1) rotate(15deg);
+}
 
+/* Charm Overdrive Mode (Easter Egg) */
+body.charm-overdrive {
+    animation: background-pulse 4s infinite alternate;
+}
 
+body.charm-overdrive .card {
+    border-color: rgba(168, 85, 247, 0.4);
+    box-shadow: 0 8px 32px rgba(168, 85, 247, 0.15);
+}
+
+body.charm-overdrive .magic-wand-btn {
+    opacity: 1;
+    filter: none;
+    animation: float-wand 2s infinite ease-in-out;
+}
+
+body.charm-overdrive .pulse-dot {
+    background-color: var(--accent-purple);
+    box-shadow: 0 0 16px var(--accent-purple-glow);
+}
+
+@keyframes float-wand {
+    0% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-5px) rotate(15deg); }
+    100% { transform: translateY(0px) rotate(0deg); }
+}
+
+@keyframes background-pulse {
+    0% { background-color: var(--bg-dark); }
+    100% { background-color: #1a0f2e; }
+}
+
+/* Print Styles */
+@media print {
+    body {
+        background: white !important;
+        color: black !important;
+        padding: 0;
+    }
+    .glow-bg, .control-panel, .action-footer, .audits-toggle-bar, .magic-wand-btn {
+        display: none !important;
+    }
+    .app-content {
+        display: block;
+    }
+    .card {
+        background: transparent !important;
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        margin-refresh: 20px;
+        page-break-inside: avoid;
+    }
+    .app-header h1 {
+        background: none;
+        color: black;
+        -webkit-text-fill-color: black;
+    }
+    .metric-card {
+        border: 1px solid #ddd !important;
+    }
+    .metric-value {
+        color: black !important;
+    }
+    .metric-footer span {
+        color: #333 !important;
+    }
+    svg text {
+        fill: black !important;
+    }
+    .detailed-audits-panel {
+        display: block !important;
+    }
+    .gantt-segment {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+    .risk-badge {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+    .disclaimer-container {
+        border-color: #aaa !important;
+    }
+}

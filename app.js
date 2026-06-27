@@ -28,7 +28,8 @@ const state = {
     timelineView: 'list',
     complexityLevel: 'medium',
     resourcePreset: 'solo',
-    detailedPanelOpen: false
+    detailedPanelOpen: false,
+    charmActive: false
 };
 
 // Model Preset Database
@@ -210,7 +211,9 @@ const elements = {
     // Buttons
     btnCopy: document.getElementById('btn-copy'),
     btnExport: document.getElementById('btn-export'),
-    btnCopyLink: document.getElementById('btn-copy-link')
+    btnCopyLink: document.getElementById('btn-copy-link'),
+    btnPrint: document.getElementById('btn-print'),
+    btnCastCharm: document.getElementById('btn-cast-charm')
 };
 
 // Initialize Application
@@ -218,6 +221,12 @@ function init() {
     setupEventListeners();
     loadStateFromUrl();
     syncInputsFromState();
+    
+    // Apply charm mode UI if active from state
+    if (state.charmActive) {
+        document.body.classList.add('charm-overdrive');
+    }
+    
     calculate();
 }
 
@@ -388,6 +397,28 @@ function setupEventListeners() {
         }
         syncStateToUrl();
     });
+
+    // Print Report
+    if (elements.btnPrint) {
+        elements.btnPrint.addEventListener('click', () => {
+            window.print();
+        });
+    }
+
+    // Charm Mode Easter Egg
+    if (elements.btnCastCharm) {
+        elements.btnCastCharm.addEventListener('click', () => {
+            state.charmActive = !state.charmActive;
+            if (state.charmActive) {
+                document.body.classList.add('charm-overdrive');
+                showToast("✨ Confundus Charm Cast! Estimates padded by 15% to confuse stakeholders.");
+            } else {
+                document.body.classList.remove('charm-overdrive');
+                showToast("Charm removed. Estimates back to normal.");
+            }
+            calculate();
+        });
+    }
 }
 
 // Utility to link range sliders with numeric inputs
@@ -664,7 +695,10 @@ function calculate() {
                              ((state.revisions * (state.revisions - 1)) / 2) * targetCodeTokens;
     
     // 3. Time Calculations & Buffer
-    const bufferMultiplier = 1 + (state.bufferPercent / 100);
+    let bufferMultiplier = 1 + (state.bufferPercent / 100);
+    if (state.charmActive) {
+        bufferMultiplier += 0.15; // 15% extra padding for the charm
+    }
     const reviewTimeSeconds = state.revisions * (state.reviewTime + state.qaTime) * 60 * bufferMultiplier;
     const generationTimeSeconds = (totalOutputTokens / state.tps) * bufferMultiplier;
     const totalTimeSeconds = generationTimeSeconds + reviewTimeSeconds;
@@ -696,17 +730,18 @@ function calculate() {
     const outputCost = (totalOutputTokens / 1000000) * state.outputPrice;
     const totalCost = inputCost + outputCost;
 
-    // 6. Update Metrics Displays
-    elements.displayEta.innerText = `${calendarDays.toFixed(1)} Days`;
+    // 6. Update Metrics Displays with Animation
+    animateValue(elements.displayEta, parseFloat(elements.displayEta.innerText) || 0, calendarDays, 600, val => `${val.toFixed(1)} Days`);
     elements.detailActiveTime.innerText = formatDuration(totalTimeSeconds);
     elements.detailGenerationTime.innerText = formatDuration(generationTimeSeconds);
     elements.detailReviewTime.innerText = formatDuration(reviewTimeSeconds);
     
-    elements.displayCost.innerText = formatCurrency(totalCost);
+    animateValue(elements.displayCost, parseFloat((elements.displayCost.innerText || '').replace(/[^0-9.-]+/g, "")) || 0, totalCost, 600, val => formatCurrency(val));
     elements.detailInputCost.innerText = formatCurrency(inputCost);
     elements.detailOutputCost.innerText = formatCurrency(outputCost);
     
-    elements.displayTokens.innerText = formatTokens(totalOutputTokens);
+    // Parse M or k for token animations if possible, fallback to re-rendering
+    animateValue(elements.displayTokens, 0, totalOutputTokens, 600, val => formatTokens(val));
     elements.detailCodeTokens.innerText = formatTokens(targetCodeTokens * state.revisions);
     elements.detailOverheadTokens.innerText = formatTokens(totalOutputTokens - (targetCodeTokens * state.revisions));
 
@@ -904,6 +939,10 @@ function renderCharts(codeTokens, totalOutputTokens, inputCost, outputCost) {
         codeCircle.setAttribute('transform', `rotate(-90 ${cx} ${cy})`);
         codeCircle.setAttribute('stroke-linecap', 'round');
         
+        const codeTitle = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        codeTitle.textContent = `Code Generation: ${formatTokens(codeTokens)}`;
+        codeCircle.appendChild(codeTitle);
+        
         const overheadCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         overheadCircle.setAttribute('cx', cx);
         overheadCircle.setAttribute('cy', cy);
@@ -916,6 +955,10 @@ function renderCharts(codeTokens, totalOutputTokens, inputCost, outputCost) {
         const angleOffset = (codePercent / 100) * 360 - 90;
         overheadCircle.setAttribute('transform', `rotate(${angleOffset} ${cx} ${cy})`);
         overheadCircle.setAttribute('stroke-linecap', 'round');
+        
+        const overheadTitle = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        overheadTitle.textContent = `Overhead/Drafts: ${formatTokens(overheadTokens)}`;
+        overheadCircle.appendChild(overheadTitle);
 
         // Text inside donut
         const centerText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -993,6 +1036,10 @@ function renderCharts(codeTokens, totalOutputTokens, inputCost, outputCost) {
         inputCircle.setAttribute('transform', `rotate(-90 ${cx} ${cy})`);
         inputCircle.setAttribute('stroke-linecap', 'round');
         
+        const inputTitle = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        inputTitle.textContent = `Input API Cost: ${formatCurrency(inputCost)}`;
+        inputCircle.appendChild(inputTitle);
+        
         const outputCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         outputCircle.setAttribute('cx', cx);
         outputCircle.setAttribute('cy', cy);
@@ -1004,6 +1051,10 @@ function renderCharts(codeTokens, totalOutputTokens, inputCost, outputCost) {
         const angleOffset = (inputPercent / 100) * 360 - 90;
         outputCircle.setAttribute('transform', `rotate(${angleOffset} ${cx} ${cy})`);
         outputCircle.setAttribute('stroke-linecap', 'round');
+        
+        const outputTitle = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        outputTitle.textContent = `Output API Cost: ${formatCurrency(outputCost)}`;
+        outputCircle.appendChild(outputTitle);
         
         const centerText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         centerText.setAttribute('x', cx);
@@ -1383,14 +1434,37 @@ function syncStateToUrl() {
         timelineView: state.timelineView,
         complexityLevel: state.complexityLevel,
         resourcePreset: state.resourcePreset,
-        detailedPanelOpen: state.detailedPanelOpen
+        detailedPanelOpen: state.detailedPanelOpen,
+        charmActive: state.charmActive
     });
-    window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+    const urlString = `?${params.toString()}`;
+    window.history.replaceState({}, '', `${window.location.pathname}${urlString}`);
+    
+    // Save to localStorage
+    try {
+        localStorage.setItem('confundusState', JSON.stringify(state));
+    } catch (e) {
+        console.warn('LocalStorage is not available.');
+    }
 }
 
 function loadStateFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    if (params.toString() === '') return;
+    let params = new URLSearchParams(window.location.search);
+    
+    // Fallback to localStorage if no params in URL
+    if (params.toString() === '') {
+        try {
+            const saved = localStorage.getItem('confundusState');
+            if (saved) {
+                const parsedState = JSON.parse(saved);
+                Object.assign(state, parsedState);
+                return;
+            }
+        } catch(e) {
+            console.warn('LocalStorage read failed.');
+        }
+        return;
+    }
     
     const floatParams = ['inputPrice', 'outputPrice'];
     const intParams = [
@@ -1437,6 +1511,30 @@ function loadStateFromUrl() {
     if (params.has('detailedPanelOpen')) {
         state.detailedPanelOpen = params.get('detailedPanelOpen') === 'true';
     }
+    if (params.has('charmActive')) {
+        state.charmActive = params.get('charmActive') === 'true';
+    }
+}
+
+// Animation Helper
+function animateValue(obj, start, end, duration, formatter) {
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        // Easing (easeOutQuad)
+        const easeProgress = 1 - (1 - progress) * (1 - progress);
+        const currentVal = start + (end - start) * easeProgress;
+        
+        obj.innerText = formatter(currentVal);
+        
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        } else {
+            obj.innerText = formatter(end);
+        }
+    };
+    window.requestAnimationFrame(step);
 }
 
 function syncInputsFromState() {
