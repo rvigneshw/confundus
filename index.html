@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confundus — AI Project Cost & Time Estimator</title>
+    <meta name="description" content="Calculate and visualize token output, cost, generation time, and revisions for AI-driven software development projects.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="glow-bg"></div>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="pulse-dot"></div>
+                <h1>Confundus AI Project Estimator</h1>
+            </div>
+            <p class="subtitle">Backwards-plan development timelines, token volumes, and API costs for generative AI projects.</p>
+        </header>
+
+        <main class="app-content">
+            <!-- Sidebar / Control Panel -->
+            <section class="control-panel card">
+                <div class="panel-section-header">
+                    <h2>Configuration</h2>
+                    <span class="badge">Model Presets</span>
+                </div>
+
+                <!-- Presets selector -->
+                <div class="input-group">
+                    <label for="preset-select">Model Preset</label>
+                    <select id="preset-select" class="custom-select">
+                        <option value="opus" selected>Claude 3 Opus (Premium/Reasoning)</option>
+                        <option value="sonnet35">Claude 3.5 Sonnet (Balanced/Fast)</option>
+                        <option value="gpt4o">GPT-4o (Omni/Balanced)</option>
+                        <option value="gemini-pro">Gemini 1.5 Pro (Large Context)</option>
+                        <option value="gemini-flash">Gemini 1.5 Flash (Ultra Fast/Cheap)</option>
+                        <option value="custom">Custom Configuration</option>
+                    </select>
+                </div>
+
+                <!-- Project Scope Preset selector -->
+                <div class="input-group">
+                    <label for="project-preset-select">Project Profile Preset <span class="info-icon" data-tooltip="Applies standard LOC scale, iterations complexity, and traditional velocities for different software shapes.">?</span></label>
+                    <select id="project-preset-select" class="custom-select">
+                        <option value="custom" selected>Custom Project Scope</option>
+                        <option value="script">Small Script / Utility (~1k LOC)</option>
+                        <option value="feature">New Web App Feature / Module (~5k LOC)</option>
+                        <option value="service">Microservice / Backend API (~15k LOC)</option>
+                        <option value="dashboard">Full Web Dashboard / Portal (~30k LOC)</option>
+                        <option value="monolith">Legacy Monolith Refactoring (~80k LOC)</option>
+                    </select>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Unified Section: Project Scope & Complexity -->
+                <div class="input-section">
+                    <h3>Scope & Complexity</h3>
+                    
+                    <div class="button-group" id="complexity-preset-group">
+                        <button type="button" class="btn btn-tab" data-complexity="low">Low <span class="sub-label">(1k LOC, 2 Revs)</span></button>
+                        <button type="button" class="btn btn-tab active" data-complexity="medium">Medium <span class="sub-label">(10k LOC, 5 Revs)</span></button>
+                        <button type="button" class="btn btn-tab" data-complexity="high">High <span class="sub-label">(50k LOC, 12 Revs)</span></button>
+                        <button type="button" class="btn btn-tab" data-complexity="custom">Custom</button>
+                    </div>
+
+                    <!-- Collapsible Advanced Variables -->
+                    <div class="advanced-accordion">
+                        <div class="accordion-header" id="advanced-toggle">
+                            <span>Advanced Scope Settings</span>
+                            <span class="accordion-arrow">▼</span>
+                        </div>
+                        <div class="accordion-content" id="advanced-scale-content" style="display: none;">
+                            <div class="input-group">
+                                <div class="label-row">
+                                    <label for="input-loc">Expected Lines of Code (LOC) <span class="info-icon" data-tooltip="Expected size of the final codebase in lines of code.">?</span></label>
+                                    <input type="number" id="num-loc" min="100" max="250000" step="100" value="10000" class="numeric-input">
+                                </div>
+                                <input type="range" id="input-loc" min="100" max="100000" step="500" value="10000" class="slider-input">
+                                <div class="slider-labels">
+                                    <span>100 LOC</span>
+                                    <span>100k LOC</span>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="label-row">
+                                    <label for="input-tokens-line">Tokens per Line <span class="info-icon" data-tooltip="Average tokens per line of code. Typically 15-25 tokens.">?</span></label>
+                                    <input type="number" id="num-tokens-line" min="5" max="100" step="1" value="20" class="numeric-input">
+                                </div>
+                                <input type="range" id="input-tokens-line" min="5" max="50" step="1" value="20" class="slider-input">
+                                <div class="slider-labels">
+                                    <span>5 tokens</span>
+                                    <span>50 tokens</span>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="label-row">
+                                    <label for="input-revisions">Iteration Cycles (Revisions) <span class="info-icon" data-tooltip="Number of cycles the model takes to refine, test, and debug the project.">?</span></label>
+                                    <input type="number" id="num-revisions" min="1" max="100" step="1" value="10" class="numeric-input">
+                                </div>
+                                <input type="range" id="input-revisions" min="1" max="50" step="1" value="10" class="slider-input">
+                                <div class="slider-labels">
+                                    <span>1 cycle</span>
+                                    <span>50 cycles</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Unified Section: Model & API Profile -->
+                <div class="input-section">
+                    <h3>Model & API Profile</h3>
+                    
+                    <div class="input-group">
+                        <label for="preset-select">Model Preset <span class="info-icon" data-tooltip="Select a standard model profile or configure custom pricing.">?</span></label>
+                        <select id="preset-select" class="custom-select">
+                            <option value="opus" selected>Claude 3 Opus (Reasoning-heavy)</option>
+                            <option value="Haika35" style="display:none;">Claude 3.5 Haiku (Legacy)</option>
+                            <option value="sonnet35">Claude 3.5 Sonnet (Balanced)</option>
+                            <option value="haiku35">Claude 3.5 Haiku (Fast)</option>
+                            <option value="gpt4o">GPT-4o (Multimodal)</option>
+                            <option value="gpt4o-mini">GPT-4o Mini (Cost-efficient)</option>
+                            <option value="custom">Custom Configuration</option>
+                        </select>
+                    </div>
+
+                    <!-- Collapsible Model Accordion -->
+                    <div class="advanced-accordion">
+                        <div class="accordion-header" id="model-toggle">
+                            <span>Advanced Model & API Settings</span>
+                            <span class="accordion-arrow">▼</span>
+                        </div>
+                        <div class="accordion-content" id="advanced-model-content" style="display: none;">
+                            <div class="input-group">
+                                <div class="label-row">
+                                    <label for="input-tps">Model Speed (TPS) <span class="info-icon" data-tooltip="Tokens Per Second generated by the model.">?</span></label>
+                                    <input type="number" id="num-tps" min="1" max="1000" step="1" value="50" class="numeric-input">
+                                </div>
+                                <input type="range" id="input-tps" min="1" max="250" step="5" value="50" class="slider-input">
+                                <div class="slider-labels">
+                                    <span>1 tps</span>
+                                    <span>250 tps</span>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="label-row">
+                                    <label for="input-code-ratio">Code Ratio (% of output) <span class="info-icon" data-tooltip="Percentage of generated tokens that are final code. The rest is explanation, planning, reasoning, and drafts.">?</span></label>
+                                    <input type="number" id="num-code-ratio" min="1" max="100" step="1" value="20" class="numeric-input">%
+                                </div>
+                                <input type="range" id="input-code-ratio" min="5" max="100" step="1" value="20" class="slider-input">
+                                <div class="slider-labels">
+                                    <span>5% (Deep reasoning)</span>
+                                    <span>100% (Raw code)</span>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="label-row">
+                                    <label for="input-context-size">Avg Base Context / Rev <span class="info-icon" data-tooltip="Base context window size (prompt + instructions + dependencies) before codebase is read.">?</span></label>
+                                    <input type="number" id="num-context-size" min="1000" max="500000" step="1000" value="10000" class="numeric-input">
+                                </div>
+                                <input type="range" id="input-context-size" min="1000" max="100000" step="1000" value="10000" class="slider-input">
+                                <div class="slider-labels">
+                                    <span>1k tokens</span>
+                                    <span>100k tokens</span>
+                                </div>
+                            </div>
+
+                            <div class="input-row-group" style="margin-top:10px;">
+                                <div class="input-group half">
+                                    <label for="num-input-price">Input Price / 1M <span class="info-icon" data-tooltip="API price for input context tokens (per million).">?</span></label>
+                                    <div class="price-input-wrapper">
+                                        <span>$</span>
+                                        <input type="number" id="num-input-price" min="0" max="100" step="0.01" value="15.00" class="numeric-input">
+                                    </div>
+                                </div>
+                                <div class="input-group half">
+                                    <label for="num-output-price">Output Price / 1M <span class="info-icon" data-tooltip="API price for generated output tokens (per million).">?</span></label>
+                                    <div class="price-input-wrapper">
+                                        <span>$</span>
+                                        <input type="number" id="num-output-price" min="0" max="300" step="0.01" value="75.00" class="numeric-input">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="checkbox-group" style="margin-top: 15px;">
+                                <label class="custom-checkbox" data-tooltip="Enables Claude/GPT prompt caching which reduces input cost by 80% on cached reads during iteration cycles.">
+                                    <input type="checkbox" id="input-prompt-caching" checked>
+                                    <span class="checkmark"></span>
+                                    Enable API Prompt Caching (Saves 80% In)
+                                    <span class="info-icon" style="margin-left:4px;">?</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Unified Section: Resource & PM Settings -->
+                <div class="input-section">
+                    <h3>Resource & PM Benchmarks</h3>
+
+                    <div class="input-group">
+                        <label for="resource-preset-select">Resource Profile <span class="info-icon" data-tooltip="Select a preconfigured human resource and team profile.">?</span></label>
+                        <select id="resource-preset-select" class="custom-select">
+                            <option value="solo" selected>Solo Senior Developer (Dedicated)</option>
+                            <option value="team">Standard Dev Team (50% Allocation)</option>
+                            <option value="agency">Enterprise Agency (25% Allocation)</option>
+                            <option value="custom">Custom Resource Configuration</option>
+                        </select>
+                    </div>
+
+                    <!-- Collapsible Resource Accordion -->
+                    <div class="advanced-accordion">
+                        <div class="accordion-header" id="resource-toggle">
+                            <span>Advanced PM & Cost Settings</span>
+                            <span class="accordion-arrow">▼</span>
+                        </div>
+                        <div class="accordion-content" id="advanced-resource-content" style="display: none;">
+                            <div class="input-group">
+                                <div class="label-row">
+                                    <label for="input-review-time">Dev Review Time / Rev <span class="info-icon" data-tooltip="Active minutes a developer spends reviewing and prompting per revision cycle.">?</span></label>
+                                    <input type="number" id="num-review-time" min="0" max="120" step="1" value="15" class="numeric-input">
+                                </div>
+                                <input type="range" id="input-review-time" min="0" max="60" step="5" value="15" class="slider-input">
+                                <div class="slider-labels">
+                                    <span>0 mins</span>
+                                    <span>60 mins</span>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="label-row">
+                                    <label for="input-qa-time">QA & Test Run Time (mins/rev) <span class="info-icon" data-tooltip="Extra developer minutes spent running test suites and checking code correctness per revision.">?</span></label>
+                                    <input type="number" id="num-qa-time" min="0" max="120" step="5" value="10" class="numeric-input">
+                                </div>
+                                <input type="range" id="input-qa-time" min="0" max="60" step="5" value="10" class="slider-input">
+                                <div class="slider-labels">
+                                    <span>0 mins</span>
+                                    <span>60 mins</span>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="label-row">
+                                    <label for="input-dev-rate">Dev Hourly Rate ($/hr) <span class="info-icon" data-tooltip="Standard hourly rate for an engineering resource.">?</span></label>
+                                    <input type="number" id="num-dev-rate" min="10" max="300" step="5" value="65" class="numeric-input">
+                                </div>
+                                <input type="range" id="input-dev-rate" min="10" max="200" step="5" value="65" class="slider-input">
+                                <div class="slider-labels">
+                                    <span>$10/hr</span>
+                                    <span>$200/hr</span>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="label-row">
+                                    <label for="input-traditional-speed">Traditional Velocity (LOC/hr) <span class="info-icon" data-tooltip="Velocity of a standard human developer writing and checking code.">?</span></label>
+                                    <input type="number" id="num-traditional-speed" min="1" max="100" step="1" value="20" class="numeric-input">
+                                </div>
+                                <input type="range" id="input-traditional-speed" min="5" max="50" step="1" value="20" class="slider-input">
+                                <div class="slider-labels">
+                                    <span>5 LOC/hr</span>
+                                    <span>50 LOC/hr</span>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="label-row">
+                                    <label for="input-buffer">Contingency Buffer (%) <span class="info-icon" data-tooltip="Buffer added to the final timeline to account for QA, bugs, rate limits, and model revisions.">?</span></label>
+                                    <input type="number" id="num-buffer" min="0" max="100" step="5" value="20" class="numeric-input">%
+                                </div>
+                                <input type="range" id="input-buffer" min="0" max="50" step="5" value="20" class="slider-input">
+                                <div class="slider-labels">
+                                    <span>0% (Tight)</span>
+                                    <span>50% (Conservative)</span>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="label-row">
+                                    <label for="input-dev-hours">Dev Workday Hours <span class="info-icon" data-tooltip="Total hours the developer works per day.">?</span></label>
+                                    <input type="number" id="num-dev-hours" min="1" max="16" step="1" value="6" class="numeric-input">
+                                </div>
+                                <input type="range" id="input-dev-hours" min="1" max="12" step="1" value="6" class="slider-input">
+                                <div class="slider-labels">
+                                    <span>1 hr/day</span>
+                                    <span>12 hrs/day</span>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="label-row">
+                                    <label for="input-dev-allocation">Project Allocation (%) <span class="info-icon" data-tooltip="Percentage of the workday the developer allocates to this project.">?</span></label>
+                                    <input type="number" id="num-dev-allocation" min="5" max="100" step="5" value="100" class="numeric-input">%
+                                </div>
+                                <input type="range" id="input-dev-allocation" min="5" max="100" step="5" value="100" class="slider-input">
+                                <div class="slider-labels">
+                                    <span>5% (Part-time)</span>
+                                    <span>100% (Dedicated)</span>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="label-row">
+                                    <label for="input-work-days">Work Week (Days) <span class="info-icon" data-tooltip="Number of active workdays per week.">?</span></label>
+                                    <input type="number" id="num-work-days" min="1" max="7" step="1" value="5" class="numeric-input">
+                                </div>
+                                <input type="range" id="input-work-days" min="1" max="7" step="1" value="5" class="slider-input">
+                                <div class="slider-labels">
+                                    <span>1 day</span>
+                                    <span>7 days</span>
+                                </div>
+                            </div>
+
+                            <div class="checkbox-group">
+                                <label class="custom-checkbox" data-tooltip="AI works 24/7 in the background. If unchecked, AI generation blocks working hours.">
+                                    <input type="checkbox" id="input-async-ai" checked>
+                                    <span class="checkmark"></span>
+                                    AI runs asynchronously (overnight)
+                                    <span class="info-icon" style="margin-left:4px;">?</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dashboard Display -->
+            <section class="dashboard-panel">
+                <!-- Confundus Charm Disclaimer (Moved to top!) -->
+                <div class="disclaimer-container card">
+                    <p class="disclaimer-text">
+                        🧙‍♂️ <strong><a href="https://harrypotter.fandom.com/wiki/Confundus_Charm" target="_blank" class="charm-link">Confundus Charm</a> Disclaimer:</strong> This dashboard performs clean, linear arithmetic to make your project timeline look gorgeous on a slide. In reality, AI projects are chaotic cycles of prompt drift, hallucinated dependencies, API rate-limit tantrums, and midnight refactoring spirals. If this estimate clashes with what the actual developers at your company are telling you... <strong>please listen to your devs</strong>. They have to actually build the system, whereas this calculator is just casting a charm to keep stakeholders happy.
+                    </p>
+                </div>
+
+                <!-- Summary Metrics Cards -->
+                <div class="metrics-grid">
+                    <div class="metric-card card glow-purple">
+                        <div class="metric-header">
+                            <span>Project Calendar ETA</span>
+                            <div class="metric-icon clock-icon"></div>
+                        </div>
+                        <div class="metric-value" id="display-eta">0.0 Days</div>
+                        <div class="metric-footer">
+                            Effort: <span id="detail-active-time">0h</span> (<span id="detail-generation-time">0h</span> AI + <span id="detail-review-time">0h</span> Human)
+                        </div>
+                    </div>
+
+                    <div class="metric-card card glow-cyan">
+                        <div class="metric-header">
+                            <span>Total Model Cost</span>
+                            <div class="metric-icon dollar-icon"></div>
+                        </div>
+                        <div class="metric-value" id="display-cost">$0.00</div>
+                        <div class="metric-footer">
+                            Input: <span id="detail-input-cost">$0.00</span> | Output: <span id="detail-output-cost">$0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card card glow-emerald">
+                        <div class="metric-header">
+                            <span>Total Generated Tokens</span>
+                            <div class="metric-icon database-icon"></div>
+                        </div>
+                        <div class="metric-value" id="display-tokens">0.0M</div>
+                        <div class="metric-footer">
+                            Code: <span id="detail-code-tokens">0.0M</span> | Reasoning: <span id="detail-overhead-tokens">0.0M</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Visualization Card -->
+                <div class="viz-card card">
+                    <div class="viz-header">
+                        <h2>Token & Cost Visualizations</h2>
+                        <div class="tab-selectors">
+                            <button class="btn btn-sub active" id="btn-chart-tokens">Token Split</button>
+                            <button class="btn btn-sub" id="btn-chart-costs">Cost Split</button>
+                        </div>
+                    </div>
+                    <div class="viz-body">
+                        <!-- Chart 1: Token Distribution SVG -->
+                        <div class="chart-container" id="chart-tokens-container">
+                            <svg id="svg-token-chart" viewBox="0 0 400 240">
+                                <!-- Will be drawn dynamically by Javascript -->
+                            </svg>
+                        </div>
+                        <!-- Chart 2: Cost Stacked Bar SVG -->
+                        <div class="chart-container" id="chart-costs-container" style="display: none;">
+                            <svg id="svg-cost-chart" viewBox="0 0 400 240">
+                                <!-- Will be drawn dynamically by Javascript -->
+                            </svg>
+                        </div>
+                        <!-- Detailed Explanation (Interactive Pipeline) -->
+                        <div class="explanation-box">
+                            <h3>Project Pipeline: How We Calculate the Timeline</h3>
+                            <div class="pipeline-container">
+                                <div class="pipeline-step">
+                                    <div class="step-num">1</div>
+                                    <div class="step-label">Scale</div>
+                                    <div class="step-val"><span class="pipe-loc">10,000</span></div>
+                                    <div class="step-desc">Target LOC</div>
+                                </div>
+                                <div class="pipeline-arrow">➔</div>
+                                <div class="pipeline-step">
+                                    <div class="step-num">2</div>
+                                    <div class="step-label">Code Vol</div>
+                                    <div class="step-val"><span class="pipe-code-tokens">200k</span></div>
+                                    <div class="step-desc">LOC × Tokens/Line</div>
+                                </div>
+                                <div class="pipeline-arrow">➔</div>
+                                <div class="pipeline-step">
+                                    <div class="step-num">3</div>
+                                    <div class="step-label">AI Output</div>
+                                    <div class="step-val"><span class="pipe-total-tokens">1.0M</span></div>
+                                    <div class="step-desc">Code Vol / Ratio %<br>(Per Revision)</div>
+                                </div>
+                                <div class="pipeline-arrow">➔</div>
+                                <div class="pipeline-step">
+                                    <div class="step-num">4</div>
+                                    <div class="step-label">Project Vol</div>
+                                    <div class="step-val"><span class="pipe-grand-tokens">10.0M</span></div>
+                                    <div class="step-desc">Output × Revisions<br>(Total Output)</div>
+                                </div>
+                                <div class="pipeline-arrow">➔</div>
+                                <div class="pipeline-step">
+                                    <div class="step-num">5</div>
+                                    <div class="step-label">Calendar ETA</div>
+                                    <div class="step-val"><span class="pipe-eta">7.0 Days</span></div>
+                                    <div class="step-desc">AI Gen + Dev Review<br>(Simulated Schedule)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Togglable Detailed Audits Toggle Bar -->
+                <div class="audits-toggle-bar" id="audits-toggle">
+                    <span>View Detailed Project Governance, ROI, & Simulations</span>
+                    <span class="audits-toggle-arrow">▼</span>
+                </div>
+
+                <!-- Collapsible Container for Detailed Audits & Reports -->
+                <div class="detailed-audits-panel" id="detailed-audits-panel" style="display: none;">
+                    <!-- ROI Analysis Card -->
+                    <div class="roi-card card glow-emerald">
+                        <div class="roi-header">
+                            <h2>Business ROI & Cost-Benefit Analysis</h2>
+                            <span class="roi-saving-badge" id="roi-savings-percent">Saves 87%</span>
+                        </div>
+                        <div class="roi-grid">
+                            <div class="roi-column">
+                                <h3>Traditional Dev Pipeline</h3>
+                                <div class="roi-stat">
+                                    <span class="roi-label">Effort Required</span>
+                                    <span class="roi-val" id="roi-traditional-hours">500 Hours</span>
+                                    <span class="roi-sub" id="roi-traditional-weeks">10.4 Weeks</span>
+                                </div>
+                                <div class="roi-stat">
+                                    <span class="roi-label">Estimated Cost</span>
+                                    <span class="roi-val" id="roi-traditional-cost">$32,500</span>
+                                    <span class="roi-sub">Based on dev velocity & rate</span>
+                                </div>
+                            </div>
+                            <div class="roi-divider-vertical"></div>
+                            <div class="roi-column">
+                                <h3>AI-Assisted Dev Pipeline</h3>
+                                <div class="roi-stat">
+                                    <span class="roi-label">Active Dev Effort</span>
+                                    <span class="roi-val" id="roi-ai-hours">4.2 Hours</span>
+                                    <span class="roi-sub" id="roi-ai-calendar">8.4 Calendar Days</span>
+                                </div>
+                                <div class="roi-stat">
+                                    <span class="roi-label">Total Combined Cost</span>
+                                    <span class="roi-val" id="roi-ai-cost">$4,136.50</span>
+                                    <span class="roi-sub"><span id="roi-ai-dev-cost">$3,250</span> Dev + <span id="roi-ai-api-cost">$886</span> API</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="roi-footer">
+                            <div class="roi-net-savings">
+                                Net Cost Savings: <strong id="roi-net-savings-cost">$28,363.50</strong>
+                            </div>
+                            <div class="roi-net-time">
+                                Time Saved: <strong id="roi-net-savings-time">495.8 Hours</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- What-If Preset Comparison Table -->
+                    <div class="table-card card">
+                        <div class="table-header">
+                            <h2>Model Scenario Comparison</h2>
+                            <p>How the same project parameters compare across different LLM APIs</p>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="comparison-table" id="comparison-table">
+                                <thead>
+                                    <tr>
+                                        <th>Model Configuration</th>
+                                        <th>Speed (TPS)</th>
+                                        <th>Pricing (In/Out per 1M)</th>
+                                        <th>Model ETA</th>
+                                        <th>Est. API Cost</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Risk & Feasibility Registry Card -->
+                    <div class="card risk-card">
+                        <div class="risk-header">
+                            <h2>Governance & Risk Registry</h2>
+                            <p>Adversarial audit parameters to check project feasibility limits</p>
+                        </div>
+                        <div class="risk-grid">
+                            <div class="risk-item" id="risk-context">
+                                <div class="risk-meta">
+                                    <span class="risk-label">Context Limit Risk</span>
+                                    <span class="risk-badge" id="risk-badge-context">Low Risk</span>
+                                </div>
+                                <p class="risk-desc" id="risk-desc-context">Code base size fits comfortably within the model's active window.</p>
+                            </div>
+                            <div class="risk-item" id="risk-spiral">
+                                <div class="risk-meta">
+                                    <span class="risk-label">Revision Spiral Risk</span>
+                                    <span class="risk-badge" id="risk-badge-spiral">Medium Risk</span>
+                                </div>
+                                <p class="risk-desc" id="risk-desc-spiral">Low code ratio and high revisions could indicate prompt quality risks.</p>
+                            </div>
+                            <div class="risk-item" id="risk-throttling">
+                                <div class="risk-meta">
+                                    <span class="risk-label">Rate Limit Throttling</span>
+                                    <span class="risk-badge" id="risk-badge-throttling">Low Risk</span>
+                                </div>
+                                <p class="risk-desc" id="risk-desc-throttling">Model speed (TPS) and request frequency are within average tier limits.</p>
+                            </div>
+                            <div class="risk-item" id="risk-qa">
+                                <div class="risk-meta">
+                                    <span class="risk-label">QA/Integrity Guard</span>
+                                    <span class="risk-badge" id="risk-badge-qa">No Guard</span>
+                                </div>
+                                <p class="risk-desc" id="risk-desc-qa">QA testing time per revision is set to 0. Project risks logic regressions.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simulation Log Card -->
+                    <div class="card timeline-card">
+                        <div class="timeline-card-header">
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 10px;">
+                                <div>
+                                    <h2>Detailed Simulation Timeline</h2>
+                                    <p>Chronological breakdown of developer active reviews, AI background generation, and overnight tasks</p>
+                                </div>
+                                <div class="tab-selectors">
+                                    <button class="btn btn-sub active" id="btn-view-timeline-list">Schedule Log</button>
+                                    <button class="btn btn-sub" id="btn-view-timeline-gantt">Gantt Calendar</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- View 1: List Log -->
+                        <div class="simulation-timeline" id="simulation-timeline">
+                            <!-- Dynamic timeline items will be rendered by Javascript -->
+                        </div>
+                        
+                        <!-- View 2: Gantt Calendar Grid (hidden by default) -->
+                        <div class="gantt-chart-container" id="gantt-chart-container" style="display: none;">
+                            <div class="gantt-header-row">
+                                <span class="gantt-day-header">Project Schedule</span>
+                                <span class="gantt-bar-header">Workday Resource Allocation (Blue: Dev Review/QA | Purple: AI Gen | Dark: Idle)</span>
+                            </div>
+                            <div class="gantt-grid" id="gantt-grid">
+                                <!-- Dynamic Gantt rows will be rendered by Javascript -->
+                            </div>
+                            <div class="gantt-legend">
+                                <div class="legend-item"><span class="legend-box legend-dev"></span> Developer Active Work (Review & QA)</div>
+                                <div class="legend-item"><span class="legend-box legend-ai"></span> AI Running (Background Generation)</div>
+                                <div class="legend-item"><span class="legend-box legend-idle"></span> Off-Hours (Overnight/Idle)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Export Panel -->
+                    <div class="action-footer card" style="margin-top: 10px;">
+                        <div class="action-text">
+                            <h3>Export & Save Estimate</h3>
+                            <p>Generate a breakdown report to share with your team or save for planning.</p>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-secondary" id="btn-copy-link">
+                                <span class="btn-icon link-icon"></span> Copy Share Link
+                            </button>
+                            <button class="btn btn-secondary" id="btn-copy">
+                                <span class="btn-icon copy-icon"></span> Copy Report
+                            </button>
+                            <button class="btn btn-primary" id="btn-export">
+                                <span class="btn-icon download-icon"></span> Download CSV
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <!-- Script file -->
+    <script src="app.js"></script>
+</body>
+</html>
