@@ -29,7 +29,7 @@ const state = {
     complexityLevel: 'medium',
     resourcePreset: 'solo',
     detailedPanelOpen: false,
-    charmActive: false
+    confundusActive: false
 };
 
 // Model Preset Database
@@ -241,7 +241,7 @@ const elements = {
     btnExport: document.getElementById('btn-export'),
     btnCopyLink: document.getElementById('btn-copy-link'),
     btnPrint: document.getElementById('btn-print'),
-    btnCastCharm: document.getElementById('btn-cast-charm')
+    btnConfundus: document.getElementById('btn-confundus')
 };
 
 // Initialize Application
@@ -250,9 +250,9 @@ function init() {
     loadStateFromUrl();
     syncInputsFromState();
     
-    // Apply charm mode UI if active from state
-    if (state.charmActive) {
-        document.body.classList.add('charm-overdrive');
+    // Apply Confundus overdrive UI if active from state
+    if (state.confundusActive) {
+        document.body.classList.add('confundus-overdrive');
     }
     
     calculate();
@@ -433,16 +433,16 @@ function setupEventListeners() {
         });
     }
 
-    // Charm Mode Easter Egg
-    if (elements.btnCastCharm) {
-        elements.btnCastCharm.addEventListener('click', () => {
-            state.charmActive = !state.charmActive;
-            if (state.charmActive) {
-                document.body.classList.add('charm-overdrive');
-                showToast("✨ Confundus Charm Cast! Estimates padded by 15% to confuse stakeholders.");
+    // Confundus Overdrive Easter Egg
+    if (elements.btnConfundus) {
+        elements.btnConfundus.addEventListener('click', () => {
+            state.confundusActive = !state.confundusActive;
+            if (state.confundusActive) {
+                document.body.classList.add('confundus-overdrive');
+                showToast("✨ Confundus Overdrive Activated! Estimates padded by 15% to confuse stakeholders.");
             } else {
-                document.body.classList.remove('charm-overdrive');
-                showToast("Charm removed. Estimates back to normal.");
+                document.body.classList.remove('confundus-overdrive');
+                showToast("Overdrive deactivated. Estimates back to normal.");
             }
             calculate();
         });
@@ -743,8 +743,8 @@ function calculate() {
     
     // 3. Time Calculations & Buffer
     let bufferMultiplier = 1 + (state.bufferPercent / 100);
-    if (state.charmActive) {
-        bufferMultiplier += 0.15; // 15% extra padding for the charm
+    if (state.confundusActive) {
+        bufferMultiplier += 0.15; // 15% extra padding for the overdrive
     }
     const reviewTimeSeconds = state.revisions * (state.reviewTime + state.qaTime) * 60 * bufferMultiplier;
     const generationTimeSeconds = (totalOutputTokens / state.tps) * bufferMultiplier;
@@ -1483,7 +1483,7 @@ function syncStateToUrl() {
         complexityLevel: state.complexityLevel,
         resourcePreset: state.resourcePreset,
         detailedPanelOpen: state.detailedPanelOpen,
-        charmActive: state.charmActive
+        confundusActive: state.confundusActive
     });
     const urlString = `?${params.toString()}`;
     window.history.replaceState({}, '', `${window.location.pathname}${urlString}`);
@@ -1574,8 +1574,8 @@ function loadStateFromUrl() {
     if (params.has('detailedPanelOpen')) {
         state.detailedPanelOpen = params.get('detailedPanelOpen') === 'true';
     }
-    if (params.has('charmActive')) {
-        state.charmActive = params.get('charmActive') === 'true';
+    if (params.has('confundusActive')) {
+        state.confundusActive = params.get('confundusActive') === 'true';
     }
 }
 

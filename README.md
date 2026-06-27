@@ -23,10 +23,10 @@
 
 ---
 
-## 🧙‍♂️ Confundus Charm Disclaimer
-> This dashboard performs clean, linear arithmetic to make your project timeline look gorgeous on a slide. In reality, AI projects are chaotic cycles of prompt drift, hallucinated dependencies, API rate-limit tantrums, and midnight refactoring spirals. **If this estimate clashes with what the actual developers at your company are telling you... please listen to your devs.** They have to actually build the system, whereas this calculator is just casting a charm to keep stakeholders happy.
+## 🌀 Confundus Disclaimer
+> This dashboard performs clean, linear arithmetic to make your project timeline look gorgeous on a slide. In reality, AI projects are chaotic cycles of prompt drift, hallucinated dependencies, API rate-limit tantrums, and midnight refactoring spirals. **If this estimate clashes with what the actual developers at your company are telling you... please listen to your devs.** They have to actually build the system, whereas this calculator is just a Confundus projection to keep stakeholders happy.
 
-Learn more about the [Confundus Charm](https://harrypotter.fandom.com/wiki/Confundus_Charm).
+Learn more about the origin of the name [Confundus](https://harrypotter.fandom.com/wiki/Confundus_Charm).
 
 ---
 

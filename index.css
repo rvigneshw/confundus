@@ -1621,22 +1621,22 @@ input[type=number] {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Charm Link hover effects */
-.charm-link {
+/* Confundus Link hover effects */
+.confundus-link {
     color: var(--accent-purple);
     text-decoration: none;
     border-bottom: 1px dashed var(--accent-purple);
     transition: var(--transition-smooth);
 }
 
-.charm-link:hover {
+.confundus-link:hover {
     color: var(--accent-cyan);
     border-bottom-color: var(--accent-cyan);
     text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
 }
 
-/* Magic Wand Button */
-.magic-wand-btn {
+/* Confundus Button */
+.confundus-btn {
     background: transparent;
     border: none;
     font-size: 1.5rem;
@@ -1647,29 +1647,29 @@ input[type=number] {
     filter: grayscale(100%);
 }
 
-.magic-wand-btn:hover {
+.confundus-btn:hover {
     opacity: 1;
     filter: none;
     transform: scale(1.1) rotate(15deg);
 }
 
-/* Charm Overdrive Mode (Easter Egg) */
-body.charm-overdrive {
+/* Confundus Overdrive Mode (Easter Egg) */
+body.confundus-overdrive {
     animation: background-pulse 4s infinite alternate;
 }
 
-body.charm-overdrive .card {
+body.confundus-overdrive .card {
     border-color: rgba(168, 85, 247, 0.4);
     box-shadow: 0 8px 32px rgba(168, 85, 247, 0.15);
 }
 
-body.charm-overdrive .magic-wand-btn {
+body.confundus-overdrive .confundus-btn {
     opacity: 1;
     filter: none;
     animation: float-wand 2s infinite ease-in-out;
 }
 
-body.charm-overdrive .pulse-dot {
+body.confundus-overdrive .pulse-dot {
     background-color: var(--accent-purple);
     box-shadow: 0 0 16px var(--accent-purple-glow);
 }
@@ -1692,7 +1692,7 @@ body.charm-overdrive .pulse-dot {
         color: black !important;
         padding: 0;
     }
-    .glow-bg, .control-panel, .action-footer, .audits-toggle-bar, .magic-wand-btn {
+    .glow-bg, .control-panel, .action-footer, .audits-toggle-bar, .confundus-btn {
         display: none !important;
     }
     .app-content {
