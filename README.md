@@ -1,5 +1,15 @@
 # Confundus 🧙‍♂️
-### AI Project Cost & Time Estimator (Manager Edition)
+
+
+## 🌀 Disclaimer
+> This dashboard performs clean, linear arithmetic to make your project timeline look gorgeous on a slide. In reality, AI projects are chaotic cycles of prompt drift, hallucinated dependencies, API rate-limit tantrums, and midnight refactoring spirals. **If this estimate clashes with what the actual developers at your company are telling you... please listen to your devs.** They have to actually build the system, whereas this calculator is just a Confundus projection to keep stakeholders happy.
+
+Learn more about the origin of the name [Confundus](https://harrypotter.fandom.com/wiki/Confundus_Charm).
+
+---
+
+
+### AI Project Cost & Time Estimator 
 
 **Confundus** is a corporate-grade Project Feasibility & ROI Governance Dashboard designed for managers and engineering leads. It models developer review times, background AI generations, and API token constraints to predict the true cost, calendar duration, and team constraints of generative AI development pipelines.
 
@@ -23,12 +33,7 @@
 
 ---
 
-## 🌀 Confundus Disclaimer
-> This dashboard performs clean, linear arithmetic to make your project timeline look gorgeous on a slide. In reality, AI projects are chaotic cycles of prompt drift, hallucinated dependencies, API rate-limit tantrums, and midnight refactoring spirals. **If this estimate clashes with what the actual developers at your company are telling you... please listen to your devs.** They have to actually build the system, whereas this calculator is just a Confundus projection to keep stakeholders happy.
 
-Learn more about the origin of the name [Confundus](https://harrypotter.fandom.com/wiki/Confundus_Charm).
-
----
 
 ## 🛠️ Static Installation & Development
 The project is built entirely as a static client-side web application with zero server-side dependencies.
