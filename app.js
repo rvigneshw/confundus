@@ -68,6 +68,34 @@ const presets = {
         inputPrice: 0.075,
         outputPrice: 0.30,
         contextSize: 15000
+    },
+    o1: {
+        name: 'OpenAI o1',
+        tps: 30,
+        inputPrice: 15.00,
+        outputPrice: 60.00,
+        contextSize: 25000
+    },
+    'o3-mini': {
+        name: 'OpenAI o3-mini',
+        tps: 80,
+        inputPrice: 1.10,
+        outputPrice: 4.40,
+        contextSize: 20000
+    },
+    'deepseek-r1': {
+        name: 'DeepSeek-R1',
+        tps: 55,
+        inputPrice: 0.55,
+        outputPrice: 2.19,
+        contextSize: 30000
+    },
+    'deepseek-v3': {
+        name: 'DeepSeek-V3',
+        tps: 60,
+        inputPrice: 0.14,
+        outputPrice: 0.28,
+        contextSize: 20000
     }
 };
 
@@ -580,7 +608,7 @@ function applyResourcePreset(key) {
 }
 
 // Timeline Simulation Algorithm
-function simulateCalendarDays(revisions, reviewTimeMins, outputTokensPerRev, tps, devHours, devAllocation, asyncAi) {
+function simulateCalendarDays(revisions, reviewTimeMins, outputTokensPerRev, tps, devHours, devAllocation, asyncAi, workDays) {
     const projectHoursPerDay = devHours * (devAllocation / 100);
     const reviewHours = reviewTimeMins / 60;
     const genHours = outputTokensPerRev / (tps * 3600);
@@ -589,6 +617,15 @@ function simulateCalendarDays(revisions, reviewTimeMins, outputTokensPerRev, tps
     let currentHourInDay = 0; // Hours since start of workday
     
     const timeline = [];
+    
+    const isWorkday = (d) => (d % 7) < workDays;
+    
+    const advanceToNextWorkday = () => {
+        while (!isWorkday(currentDay)) {
+            currentDay++;
+            currentHourInDay = 0;
+        }
+    };
     
     for (let r = 0; r < revisions; r++) {
         const step = {
@@ -605,10 +642,12 @@ function simulateCalendarDays(revisions, reviewTimeMins, outputTokensPerRev, tps
         };
         
         if (asyncAi) {
-            // Dev review starts (must be inside working hours)
+            // Dev review starts (must be inside a workday and within project hours)
+            advanceToNextWorkday();
             if (currentHourInDay >= projectHoursPerDay) {
                 currentDay++;
                 currentHourInDay = 0;
+                advanceToNextWorkday();
             }
             
             step.devStartDay = currentDay;
@@ -616,14 +655,15 @@ function simulateCalendarDays(revisions, reviewTimeMins, outputTokensPerRev, tps
             
             currentHourInDay += reviewHours;
             if (currentHourInDay > projectHoursPerDay) {
-                currentDay += Math.floor(currentHourInDay / projectHoursPerDay);
+                currentDay++;
                 currentHourInDay = currentHourInDay % projectHoursPerDay;
+                advanceToNextWorkday();
             }
             
             step.devEndDay = currentDay;
             step.devEndHour = currentHourInDay;
             
-            // AI generation starts (runs 24/7 in the background)
+            // AI generation starts (runs 24/7 in the background - does not block developer or weekends)
             step.aiStartDay = currentDay;
             step.aiStartHour = currentHourInDay;
             
@@ -640,21 +680,24 @@ function simulateCalendarDays(revisions, reviewTimeMins, outputTokensPerRev, tps
             step.aiEndDay = currentDay;
             step.aiEndHour = currentHourInDay;
             
-            // If the generation completes after the developer's work hours,
+            // If the generation completes after the developer's work hours or on weekend,
             // the developer cannot review it until the next day's workday starts.
-            if (currentHourInDay >= projectHoursPerDay) {
+            if (currentHourInDay >= projectHoursPerDay || !isWorkday(currentDay)) {
                 currentDay++;
                 currentHourInDay = 0;
+                advanceToNextWorkday();
             }
         } else {
             // AI runs only during developer's project hours (blocks working hours)
+            advanceToNextWorkday();
             step.devStartDay = currentDay;
             step.devStartHour = currentHourInDay;
             
             currentHourInDay += reviewHours;
             if (currentHourInDay > projectHoursPerDay) {
-                currentDay += Math.floor(currentHourInDay / projectHoursPerDay);
+                currentDay++;
                 currentHourInDay = currentHourInDay % projectHoursPerDay;
+                advanceToNextWorkday();
             }
             step.devEndDay = currentDay;
             step.devEndHour = currentHourInDay;
@@ -664,8 +707,9 @@ function simulateCalendarDays(revisions, reviewTimeMins, outputTokensPerRev, tps
             
             currentHourInDay += genHours;
             if (currentHourInDay > projectHoursPerDay) {
-                currentDay += Math.floor(currentHourInDay / projectHoursPerDay);
+                currentDay++;
                 currentHourInDay = currentHourInDay % projectHoursPerDay;
+                advanceToNextWorkday();
             }
             step.aiEndDay = currentDay;
             step.aiEndHour = currentHourInDay;
@@ -711,7 +755,8 @@ function calculate() {
         state.tps, 
         state.devHours, 
         state.devAllocation, 
-        state.asyncAi
+        state.asyncAi,
+        state.workDays
     );
     const calendarDays = simResult.totalDays * bufferMultiplier;
     const weeks = calendarDays / state.workDays;
@@ -1740,18 +1785,28 @@ function renderGanttGrid(timeline, projectHoursPerDay) {
         const aiPct = (aiHoursVal / 24) * 100;
         const idlePct = (idleHoursVal / 24) * 100;
         
+        const isWeekend = (d % 7) >= state.workDays;
+        
         const row = document.createElement('div');
-        row.className = 'gantt-row';
+        row.className = `gantt-row ${isWeekend ? 'gantt-row-weekend' : ''}`;
         
         const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         const dayName = dayNames[d % 7];
+        
+        let idleSegmentHtml = '';
+        if (idlePct > 0) {
+            const idleClass = isWeekend ? 'gantt-segment-weekend' : 'gantt-segment-idle';
+            const idleTitle = isWeekend ? 'Weekend' : 'Off-Hours';
+            const idleLabel = isWeekend ? (idlePct >= 20 ? 'Weekend (Idle)' : '') : (idleHoursVal >= 4 ? 'Off-Hours' : '');
+            idleSegmentHtml = `<div class="gantt-segment ${idleClass}" style="width: ${idlePct}%" title="${idleTitle}: ${idleHoursVal.toFixed(1)} hrs">${idleLabel}</div>`;
+        }
         
         row.innerHTML = `
             <div class="gantt-day-label">Day ${d + 1} (${dayName.substring(0, 3)})</div>
             <div class="gantt-bar-wrapper">
                 ${devPct > 0 ? `<div class="gantt-segment gantt-segment-dev" style="width: ${devPct}%" title="Developer Review: ${devHoursVal.toFixed(1)} hrs">${devHoursVal >= 1.5 ? `${devHoursVal.toFixed(1)}h Dev` : ''}</div>` : ''}
                 ${aiPct > 0 ? `<div class="gantt-segment gantt-segment-ai" style="width: ${aiPct}%" title="AI Generation: ${aiHoursVal.toFixed(1)} hrs">${aiHoursVal >= 1.5 ? `${aiHoursVal.toFixed(1)}h AI` : ''}</div>` : ''}
-                ${idlePct > 0 ? `<div class="gantt-segment gantt-segment-idle" style="width: ${idlePct}%" title="Off-Hours: ${idleHoursVal.toFixed(1)} hrs">${idleHoursVal >= 4 ? 'Off-Hours' : ''}</div>` : ''}
+                ${idleSegmentHtml}
             </div>
         `;
         container.appendChild(row);

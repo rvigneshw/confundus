@@ -1452,6 +1452,22 @@ input[type=number] {
     background: rgba(255, 255, 255, 0.03);
 }
 
+.gantt-segment-weekend {
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.05),
+        rgba(255, 255, 255, 0.05) 10px,
+        rgba(255, 255, 255, 0.02) 10px,
+        rgba(255, 255, 255, 0.02) 20px
+    );
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.gantt-row-weekend .gantt-day-label {
+    color: var(--text-muted);
+}
+
 .gantt-legend {
     display: flex;
     gap: 20px;
@@ -1688,7 +1704,7 @@ body.charm-overdrive .pulse-dot {
         box-shadow: none !important;
         backdrop-filter: none !important;
         -webkit-backdrop-filter: none !important;
-        margin-refresh: 20px;
+        margin-bottom: 20px;
         page-break-inside: avoid;
     }
     .app-header h1 {
