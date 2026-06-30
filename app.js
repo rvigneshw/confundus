@@ -32,15 +32,76 @@ const state = {
     confundusActive: false
 };
 
-const defaultPresets = window.ConfundusPresets || { models: {}, projects: {}, resources: {} };
-
-const presets = defaultPresets.models;
-const projectPresets = defaultPresets.projects;
-const resourcePresets = defaultPresets.resources;
+// Model Preset Database
+const presets = {
+    opus: {
+        name: 'Claude 3 Opus',
+        tps: 50,
+        inputPrice: 15.00,
+        outputPrice: 75.00,
+        contextSize: 10000
+    },
+    sonnet35: {
+        name: 'Claude 3.5 Sonnet',
+        tps: 85,
+        inputPrice: 3.00,
+        outputPrice: 15.00,
+        contextSize: 15000
+    },
+    gpt4o: {
+        name: 'GPT-4o',
+        tps: 90,
+        inputPrice: 5.00,
+        outputPrice: 15.00,
+        contextSize: 12000
+    },
+    'gemini-pro': {
+        name: 'Gemini 1.5 Pro',
+        tps: 60,
+        inputPrice: 1.25,
+        outputPrice: 5.00,
+        contextSize: 20000
+    },
+    'gemini-flash': {
+        name: 'Gemini 1.5 Flash',
+        tps: 160,
+        inputPrice: 0.075,
+        outputPrice: 0.30,
+        contextSize: 15000
+    },
+    o1: {
+        name: 'OpenAI o1',
+        tps: 30,
+        inputPrice: 15.00,
+        outputPrice: 60.00,
+        contextSize: 25000
+    },
+    'o3-mini': {
+        name: 'OpenAI o3-mini',
+        tps: 80,
+        inputPrice: 1.10,
+        outputPrice: 4.40,
+        contextSize: 20000
+    },
+    'deepseek-r1': {
+        name: 'DeepSeek-R1',
+        tps: 55,
+        inputPrice: 0.55,
+        outputPrice: 2.19,
+        contextSize: 30000
+    },
+    'deepseek-v3': {
+        name: 'DeepSeek-V3',
+        tps: 60,
+        inputPrice: 0.14,
+        outputPrice: 0.28,
+        contextSize: 20000
+    }
+};
 
 // DOM Elements
 const elements = {
-    modelPresetDropdowns: document.querySelectorAll('.model-preset-select'),
+    presetSelect: document.getElementById('preset-select'),
     
     // LOC
     inputLoc: document.getElementById('input-loc'),
@@ -180,13 +241,12 @@ const elements = {
     btnExport: document.getElementById('btn-export'),
     btnCopyLink: document.getElementById('btn-copy-link'),
     btnPrint: document.getElementById('btn-print'),
-    btnConfundus: document.getElementById('btn-confundus'),
+    btnConfundus: document.getElementById('btn-confundus')
 };
 
 // Initialize Application
 function init() {
     setupEventListeners();
-    populatePresets();
     loadStateFromUrl();
     syncInputsFromState();
     
@@ -238,14 +298,10 @@ function setupEventListeners() {
     });
 
     // Preset selection
-    elements.modelPresetDropdowns.forEach(dropdown => {
-        dropdown.addEventListener('change', (e) => {
-            applyPreset(e.target.value);
-            calculate();
-        });
+    elements.presetSelect.addEventListener('change', (e) => {
+        applyPreset(e.target.value);
+        calculate();
     });
-
-
 
     // Accordion Toggle for Scale
     elements.advancedToggle.addEventListener('click', () => {
@@ -440,14 +496,20 @@ function applyPreset(presetKey) {
     elements.inputContextSize.value = preset.contextSize;
     elements.numContextSize.value = preset.contextSize;
     
-    elements.modelPresetDropdowns.forEach(dropdown => {
-        dropdown.value = presetKey;
-    });
+    elements.presetSelect.value = presetKey;
 }
 
 // Apply Selected Project Type Preset
 function applyProjectPreset(key) {
     if (key === 'custom') return;
+    
+    const projectPresets = {
+        script: { loc: 1000, revisions: 2, reviewTime: 10, qaTime: 5, traditionalSpeed: 35 },
+        feature: { loc: 5000, revisions: 5, reviewTime: 15, qaTime: 10, traditionalSpeed: 25 },
+        service: { loc: 15000, revisions: 8, reviewTime: 20, qaTime: 15, traditionalSpeed: 18 },
+        dashboard: { loc: 30000, revisions: 12, reviewTime: 25, qaTime: 20, traditionalSpeed: 12 },
+        monolith: { loc: 80000, revisions: 18, reviewTime: 30, qaTime: 25, traditionalSpeed: 6 }
+    };
     
     const spec = projectPresets[key];
     if (!spec) return;
@@ -504,9 +566,7 @@ function markCustomProjectPreset() {
 // Switch Preset status to 'Custom' if user modifies static preset parameters
 function markCustomPreset() {
     state.currentPreset = 'custom';
-    elements.modelPresetDropdowns.forEach(dropdown => {
-        dropdown.value = 'custom';
-    });
+    elements.presetSelect.value = 'custom';
     
     elements.advancedModelContent.style.display = 'flex';
     elements.modelToggle.classList.add('active');
@@ -523,6 +583,12 @@ function markCustomResourcePreset() {
 // Apply Selected Resource Profile Preset
 function applyResourcePreset(key) {
     if (key === 'custom') return;
+    
+    const resourcePresets = {
+        solo: { devRate: 65, devHours: 6, devAllocation: 100, workDays: 5, traditionalSpeed: 20, bufferPercent: 20, reviewTime: 15, qaTime: 10, asyncAi: true },
+        team: { devRate: 90, devHours: 8, devAllocation: 50, workDays: 5, traditionalSpeed: 25, bufferPercent: 15, reviewTime: 20, qaTime: 15, asyncAi: true },
+        agency: { devRate: 125, devHours: 8, devAllocation: 25, workDays: 5, traditionalSpeed: 15, bufferPercent: 25, reviewTime: 30, qaTime: 20, asyncAi: true }
+    };
     
     const spec = resourcePresets[key];
     if (!spec) return;
@@ -1535,9 +1601,7 @@ function animateValue(obj, start, end, duration, formatter) {
 }
 
 function syncInputsFromState() {
-    elements.modelPresetDropdowns.forEach(dropdown => {
-        dropdown.value = state.currentPreset;
-    });
+    elements.presetSelect.value = state.currentPreset;
     elements.projectPresetSelect.value = state.projectPreset;
     elements.resourcePresetSelect.value = state.resourcePreset;
     elements.inputPromptCaching.checked = state.promptCaching;
@@ -1782,73 +1846,6 @@ function renderGanttGrid(timeline, projectHoursPerDay) {
         warning.style.cssText = 'color: var(--accent-purple); font-size: 0.8rem; text-align: center; margin-top: 10px; font-weight: 600; padding: 5px;';
         warning.textContent = `⚠️ Timeline spans ${Math.round(totalDays)} days. Only displaying first 60 days in Gantt chart.`;
         container.appendChild(warning);
-    }
-}
-
-// Preset management helpers
-function populatePresets() {
-    // 1. Populate Model select dropdowns
-    const modelDropdowns = document.querySelectorAll('.model-preset-select');
-    modelDropdowns.forEach(select => {
-        const valBefore = select.value || state.currentPreset || 'opus';
-        select.innerHTML = '';
-        
-        for (const key in presets) {
-            const preset = presets[key];
-            const option = document.createElement('option');
-            option.value = key;
-            option.textContent = preset.name;
-            select.appendChild(option);
-        }
-        
-        const optCustom = document.createElement('option');
-        optCustom.value = 'custom';
-        optCustom.textContent = 'Custom Configuration';
-        select.appendChild(optCustom);
-        
-        select.value = valBefore;
-    });
-
-    // 2. Populate Project dropdown
-    const projSelect = document.getElementById('project-preset-select');
-    if (projSelect) {
-        const valBefore = projSelect.value || state.projectPreset || 'custom';
-        projSelect.innerHTML = '';
-        
-        for (const key in projectPresets) {
-            const preset = projectPresets[key];
-            const option = document.createElement('option');
-            option.value = key;
-            option.textContent = preset.name;
-            projSelect.appendChild(option);
-        }
-        const optCustom = document.createElement('option');
-        optCustom.value = 'custom';
-        optCustom.textContent = 'Custom Project Scope';
-        projSelect.appendChild(optCustom);
-        
-        projSelect.value = valBefore;
-    }
-
-    // 3. Populate Resource dropdown
-    const resSelect = document.getElementById('resource-preset-select');
-    if (resSelect) {
-        const valBefore = resSelect.value || state.resourcePreset || 'solo';
-        resSelect.innerHTML = '';
-        
-        for (const key in resourcePresets) {
-            const preset = resourcePresets[key];
-            const option = document.createElement('option');
-            option.value = key;
-            option.textContent = preset.name;
-            resSelect.appendChild(option);
-        }
-        const optCustom = document.createElement('option');
-        optCustom.value = 'custom';
-        optCustom.textContent = 'Custom Resource Configuration';
-        resSelect.appendChild(optCustom);
-        
-        resSelect.value = valBefore;
     }
 }
 
