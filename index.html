@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🪄</text></svg>">
     <link rel="stylesheet" href="index.css">
+    <script src="presets.js"></script>
 </head>
 <body>
     <div class="glow-bg"></div>
@@ -30,35 +31,19 @@
                 <div class="panel-section-header">
                     <h2>Configuration</h2>
                     <span class="badge">Model Presets</span>
-                </div>
-
-                <!-- Presets selector -->
+                               <!-- Presets selector -->
                 <div class="input-group">
-                    <label for="preset-select">Model Preset</label>
-                    <select id="preset-select" class="custom-select">
-                        <option value="opus" selected>Claude 3 Opus (Premium/Reasoning)</option>
-                        <option value="sonnet35">Claude 3.5 Sonnet (Balanced/Fast)</option>
-                        <option value="gpt4o">GPT-4o (Omni/Balanced)</option>
-                        <option value="o1">OpenAI o1 (Deep Reasoning)</option>
-                        <option value="o3-mini">OpenAI o3-mini (Fast Reasoning)</option>
-                        <option value="deepseek-r1">DeepSeek-R1 (Budget Reasoning)</option>
-                        <option value="deepseek-v3">DeepSeek-V3 (Budget Balanced)</option>
-                        <option value="gemini-pro">Gemini 1.5 Pro (Large Context)</option>
-                        <option value="gemini-flash">Gemini 1.5 Flash (Ultra Fast/Cheap)</option>
-                        <option value="custom">Custom Configuration</option>
+                    <label for="sidebar-preset-select">Model Preset</label>
+                    <select id="sidebar-preset-select" class="custom-select model-preset-select">
+                        <!-- Populated dynamically -->
                     </select>
                 </div>
 
                 <!-- Project Scope Preset selector -->
                 <div class="input-group">
                     <label for="project-preset-select">Project Profile Preset <span class="info-icon" data-tooltip="Applies standard LOC scale, iterations complexity, and traditional velocities for different software shapes.">?</span></label>
-                    <select id="project-preset-select" class="custom-select">
-                        <option value="custom" selected>Custom Project Scope</option>
-                        <option value="script">Small Script / Utility (~1k LOC)</option>
-                        <option value="feature">New Web App Feature / Module (~5k LOC)</option>
-                        <option value="service">Microservice / Backend API (~15k LOC)</option>
-                        <option value="dashboard">Full Web Dashboard / Portal (~30k LOC)</option>
-                        <option value="monolith">Legacy Monolith Refactoring (~80k LOC)</option>
+                    <select id="project-preset-select" class="custom-select project-preset-select">
+                        <!-- Populated dynamically -->
                     </select>
                 </div>
 
@@ -128,19 +113,9 @@
                     <h3>Model & API Profile</h3>
                     
                     <div class="input-group">
-                        <label for="preset-select">Model Preset <span class="info-icon" data-tooltip="Select a standard model profile or configure custom pricing.">?</span></label>
-                        <select id="preset-select" class="custom-select">
-                            <option value="opus" selected>Claude 3 Opus (Reasoning-heavy)</option>
-                            <option value="Haika35" style="display:none;">Claude 3.5 Haiku (Legacy)</option>
-                            <option value="sonnet35">Claude 3.5 Sonnet (Balanced)</option>
-                            <option value="haiku35">Claude 3.5 Haiku (Fast)</option>
-                            <option value="gpt4o">GPT-4o (Multimodal)</option>
-                            <option value="gpt4o-mini">GPT-4o Mini (Cost-efficient)</option>
-                            <option value="o1">OpenAI o1 (Deep Reasoning)</option>
-                            <option value="o3-mini">OpenAI o3-mini (Fast Reasoning)</option>
-                            <option value="deepseek-r1">DeepSeek-R1 (Budget Reasoning)</option>
-                            <option value="deepseek-v3">DeepSeek-V3 (Budget Balanced)</option>
-                            <option value="custom">Custom Configuration</option>
+                        <label for="profile-preset-select">Model Preset <span class="info-icon" data-tooltip="Select a standard model profile or configure custom pricing.">?</span></label>
+                        <select id="profile-preset-select" class="custom-select model-preset-select">
+                            <!-- Populated dynamically -->
                         </select>
                     </div>
 
@@ -224,11 +199,8 @@
 
                     <div class="input-group">
                         <label for="resource-preset-select">Resource Profile <span class="info-icon" data-tooltip="Select a preconfigured human resource and team profile.">?</span></label>
-                        <select id="resource-preset-select" class="custom-select">
-                            <option value="solo" selected>Solo Senior Developer (Dedicated)</option>
-                            <option value="team">Standard Dev Team (50% Allocation)</option>
-                            <option value="agency">Enterprise Agency (25% Allocation)</option>
-                            <option value="custom">Custom Resource Configuration</option>
+                        <select id="resource-preset-select" class="custom-select resource-preset-select">
+                            <!-- Populated dynamically -->
                         </select>
                     </div>
 
